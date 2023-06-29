@@ -39,7 +39,21 @@ def clear_entry_box():
 def check_end_of_game():
     if counter == len(english_words):
         hide()
-        final = Label(text=f"Score: {score}")
+        text_answer = ""
+        if lang == 0: # English
+            for i in range(len(english_results)):
+                if english_results[i] == 1: # Correct answer
+                    text_answer += english_words[i] + " ✔\n"
+                else: # Incorrect answer
+                    text_answer += english_words[i] + " ✘\n"
+        elif lang == 1:
+            for i in range(len(spanish_results)):
+                if spanish_results[i] == 1:
+                    text_answer += spanish_words[i] + " ✔\n"
+                else:
+                    text_answer += english_words[i] + " ✘\n"
+        text_answer += f"Score: {score}"
+        final = Label(text=text_answer)
         final.place(relx=0.5,rely=0.5,anchor="center")
 
 def ask_question_english():
@@ -62,8 +76,10 @@ def get_answer_english():
     if answer.get() == spanish_words[counter]:
         print("Correct")
         score += 1
+        english_results[counter] = 1
     else:
         print("Incorrect")
+        english_results[counter] = 0
     counter += 1
     clear_entry_box()
     ask_question_english()
@@ -75,8 +91,10 @@ def get_answer_spanish():
     if answer.get() == english_words[counter]:
         print("Correct")
         score += 1
+        spanish_results[counter] = 1
     else:
         print("Incorrect")
+        spanish_results[counter] = 0
     counter += 1
     clear_entry_box()
     ask_question_spanish()
@@ -156,6 +174,9 @@ data = tess.image_to_string(spanish, lang='eng')
 lines = data.split('\n')
 spanish_words = list(filter(None, lines))
 print(spanish_words)
+
+english_results = [None] * len(english_words)
+spanish_results = [None] * len(spanish_words)
 
 shuffle()
 
