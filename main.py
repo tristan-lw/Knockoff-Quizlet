@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import *
+from tkinter import filedialog
 from PIL import Image
 import cv2
 import numpy as np
@@ -37,21 +38,25 @@ def clear_entry_box():
     answer_entry.delete(0,END)
 
 def check_end_of_game():
+    tick = " ✔ "
+    cross = " ✘ "
     if counter == len(english_words):
         hide()
         text_answer = ""
         if lang == 0: # English
-            for i in range(len(english_results)):
+            for i in range(len(english_results)): # English results
+                text_answer += user_answers[i]
                 if english_results[i] == 1: # Correct answer
-                    text_answer += english_words[i] + " ✔\n"
+                    text_answer += tick + english_words[i] + "\n"
                 else: # Incorrect answer
-                    text_answer += english_words[i] + " ✘\n"
+                    text_answer += cross + english_words[i] + "\n"
         elif lang == 1:
-            for i in range(len(spanish_results)):
+            for i in range(len(spanish_results)): # Spanish results
+                text_answer += user_answers[i]
                 if spanish_results[i] == 1:
-                    text_answer += spanish_words[i] + " ✔\n"
+                    text_answer += tick + spanish_words[i] + "\n"
                 else:
-                    text_answer += english_words[i] + " ✘\n"
+                    text_answer += cross + english_words[i] + "\n"
         text_answer += f"Score: {score}"
         final = Label(text=text_answer)
         final.place(relx=0.5,rely=0.5,anchor="center")
@@ -100,6 +105,7 @@ def get_answer_spanish():
     ask_question_spanish()
 
 def enter_key_pressed(event):
+    user_answers[counter] = answer.get()
     if lang == 0:
         print("get answer english")
         get_answer_english()
@@ -140,6 +146,13 @@ def preprocess(image):
     cv2.imwrite(path + "invert.png", invert)
     return invert
 
+def import_file():
+    file = filedialog.askopenfilename(
+        initialdir = "/",
+        title = "Select a File",
+        filetypes = (("Text Files", "*.txt*"),("All Files","*.*"))
+        )
+
 # Initialisation
 # -1 = null, 0 = english, 1 = spanish
 root = tk.Tk()
@@ -177,12 +190,22 @@ print(spanish_words)
 
 english_results = [None] * len(english_words)
 spanish_results = [None] * len(spanish_words)
+user_answers = [None] * len(english_words)
 
 shuffle()
 
 choose_language_label = Label(root,text="Choose language", font=("Arial", 25))
 choose_language_label.pack(ipadx=10, ipady=10, fill=tk.X, side="top")
 #choose_language_label.place(x=124, y = 40)
+import_file_button = tk.Button(
+    root,
+    text = "Import image",
+    height = 5,
+    width = 20,
+    fg = "white",
+    bg = "gray",
+    command = import_file)
+import_file_button.place(x=70, y=60)
 english_button = tk.Button(
     root,
     text = "English",
