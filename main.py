@@ -164,6 +164,8 @@ def import_file():
                      ("Images .PNG", "*.png"),
                      ("All Files","*.*"))
         )
+    import_file_button.place_forget()
+    show_gui()
     init_file()
 
 def init_file():
@@ -174,10 +176,13 @@ def init_file():
     global user_answers
     page = cv2.imread(pagePicture)
     page = preprocess(page)
+    cv2.imwrite(path + "page.png", page)
     # Split image in half
     (h, w) = page.shape[:2]
     spanish_image = page[0:h, 0:int(w/2)] # First half
     english_image = page[0:h, int(w/2):w] # Second half
+    cv2.imwrite(path + "spanish_image.png", spanish_image)
+    cv2.imwrite(path + "english_image.png", english_image)
     spanish_words = image_to_string(spanish_image)
     english_words = image_to_string(english_image)
     english_results = [None] * len(english_words)
@@ -192,47 +197,51 @@ def image_to_string(image):
     image_words = list(filter(None, lines))
     return image_words
 
+def show_gui():
+    choose_language_label.pack(ipadx=10, ipady=10, fill=tk.X, side="top")
+    english_button.place(x=70, y=120)
+    spanish_button.place(x=280,y=120)
 
-# Initialisation
-# -1 = null, 0 = english, 1 = spanish
+def start():
+    import_file_button.place(relx=0.5, rely=0.5, anchor="center")
+
+# Initialisation #
+
 root = tk.Tk()
 root.geometry("500x250")
 root.title("Knockoff Quizlet")
 root.bind("<Return>", enter_key_pressed)
 root.resizable(False, False)
+
+#######################################################################
+
 answer = tk.StringVar()
 answer_entry = tk.Entry(root, textvariable = answer)
 questionVar = StringVar()
 question_label = tk.Label(root, textvariable=questionVar)
-path = "C:/Users/Tristan/source/repos/Python/Knockoff Quizlet/"
+
+#######################################################################
+
+path = "C:/Users/Tristan/source/repos/Python/Knockoff Quizlet/files/"
+pagePicture = ""
+
+#######################################################################
+
+# -1 = null, 0 = english, 1 = spanish
 lang = -1
 counter = 0
 score = 0
-pagePicture = ""
+
+#######################################################################
+
 spanish_words = []
 english_words = []
 english_results = []
 spanish_results = []
 user_answers = []
 
+#######################################################################
 
-#english = preprocess(english)
-#spanish = preprocess(spanish)
-
-
-
-choose_language_label = Label(root,text="Choose language", font=("Arial", 25))
-choose_language_label.pack(ipadx=10, ipady=10, fill=tk.X, side="top")
-#choose_language_label.place(x=124, y = 40)
-import_file_button = tk.Button(
-    root,
-    text = "Import image",
-    height = 5,
-    width = 20,
-    fg = "white",
-    bg = "gray",
-    command = import_file)
-import_file_button.place(x=70, y=60)
 english_button = tk.Button(
     root,
     text = "English",
@@ -241,11 +250,6 @@ english_button = tk.Button(
     fg = "white",
     bg = "blue",
     command = initialize_english)
-english_button.place(x=70, y=120)
-#english_button.pack(
-#    ipadx=10,
-#    ipady=10,
-#    fill=tk.X)
 spanish_button = tk.Button(
     root,
     text = "Spanish",
@@ -254,11 +258,18 @@ spanish_button = tk.Button(
     fg = 'yellow',
     bg = 'red',
     command = initialize_spanish)
-spanish_button.place(x=280,y=120)
-#spanish_button.pack(
-#    ipadx=10,
-#    ipady=10,
-#    fill=tk.X)
+import_file_button = tk.Button(
+    root,
+    text = "Import image",
+    height = 2,
+    width = 20,
+    fg = "white",
+    bg = "gray",
+    command = import_file)
+choose_language_label = Label(root,text="Choose language", font=("Arial", 25))
+
+#######################################################################
+
+start()
 
 root.mainloop()
-
