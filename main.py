@@ -128,8 +128,14 @@ def shuffle():
         spanish_words[spanish_words.index(word)] = word.replace("\n", "")
     for word in english_words:
         english_words[english_words.index(word)] = word.replace("\n", "")
-    print(spanish_words)
-    print(english_words)
+    s = open(path + "spanish_words.txt", "w")
+    for word in spanish_words:
+        s.write(word + "\n")
+    s.close()
+    e = open(path + "english_words.txt", "w")
+    for word in english_words:
+        e.write(word + "\n")
+    e.close()
 
 def preprocess(image):
     # Preprocessing - Grayscale, Gaussian blur, Otsu's threshold
@@ -139,19 +145,53 @@ def preprocess(image):
     kernel = cv2.getStructuringElement(cv2.MORPH_RECT, (3,3))
     opening = cv2.morphologyEx(thresh, cv2.MORPH_OPEN, kernel, iterations=1)
     invert = 255 - opening
+    '''
     cv2.imwrite(path + "gray.png", gray)
     cv2.imwrite(path + "blur.png", blur)
     cv2.imwrite(path + "thresh.png", thresh)
     cv2.imwrite(path + "opening.png", opening)
     cv2.imwrite(path + "invert.png", invert)
+    '''
     return invert
 
 def import_file():
-    file = filedialog.askopenfilename(
+    global pagePicture
+    pagePicture = filedialog.askopenfilename(
         initialdir = "/",
-        title = "Select a File",
-        filetypes = (("Text Files", "*.txt*"),("All Files","*.*"))
+        title = "Open",
+        filetypes = (("Images .JPG", "*.jpg"),
+                     ("Images .JPEG", "*.jpeg"),
+                     ("Images .PNG", "*.png"),
+                     ("All Files","*.*"))
         )
+    init_file()
+
+def init_file():
+    global spanish_words
+    global english_words
+    global english_results
+    global spanish_results
+    global user_answers
+    page = cv2.imread(pagePicture)
+    page = preprocess(page)
+    # Split image in half
+    (h, w) = page.shape[:2]
+    spanish_image = page[0:h, 0:int(w/2)] # First half
+    english_image = page[0:h, int(w/2):w] # Second half
+    spanish_words = image_to_string(spanish_image)
+    english_words = image_to_string(english_image)
+    english_results = [None] * len(english_words)
+    spanish_results = [None] * len(spanish_words)
+    user_answers = [None] * len(english_words)
+    shuffle()
+    
+def image_to_string(image):
+    data = tess.image_to_string(image, lang='eng')
+    #config='--psm 6'
+    lines = data.split('\n')
+    image_words = list(filter(None, lines))
+    return image_words
+
 
 # Initialisation
 # -1 = null, 0 = english, 1 = spanish
@@ -160,39 +200,26 @@ root.geometry("500x250")
 root.title("Knockoff Quizlet")
 root.bind("<Return>", enter_key_pressed)
 root.resizable(False, False)
-
 answer = tk.StringVar()
 answer_entry = tk.Entry(root, textvariable = answer)
-
 questionVar = StringVar()
 question_label = tk.Label(root, textvariable=questionVar)
-
 path = "C:/Users/Tristan/source/repos/Python/Knockoff Quizlet/"
 lang = -1
 counter = 0
 score = 0
-english = cv2.imread(path + "english_image.jpg")
-spanish = cv2.imread(path + "spanish_image.jpg")
+pagePicture = ""
+spanish_words = []
+english_words = []
+english_results = []
+spanish_results = []
+user_answers = []
 
-english = preprocess(english)
-spanish = preprocess(spanish)
 
-data = tess.image_to_string(english, lang='eng')
-#config='--psm 6'
-lines = data.split('\n')
-english_words = list(filter(None, lines))
-print(english_words)
+#english = preprocess(english)
+#spanish = preprocess(spanish)
 
-data = tess.image_to_string(spanish, lang='eng')
-lines = data.split('\n')
-spanish_words = list(filter(None, lines))
-print(spanish_words)
 
-english_results = [None] * len(english_words)
-spanish_results = [None] * len(spanish_words)
-user_answers = [None] * len(english_words)
-
-shuffle()
 
 choose_language_label = Label(root,text="Choose language", font=("Arial", 25))
 choose_language_label.pack(ipadx=10, ipady=10, fill=tk.X, side="top")
@@ -234,3 +261,4 @@ spanish_button.place(x=280,y=120)
 #    fill=tk.X)
 
 root.mainloop()
+
