@@ -185,6 +185,8 @@ def init_file():
     cv2.imwrite(path + "english_image.png", english_image)
     spanish_words = image_to_string(spanish_image)
     english_words = image_to_string(english_image)
+    if len(spanish_words) != len(english_words):
+        print("ERROR: Arrays of different sizes")
     english_results = [None] * len(english_words)
     spanish_results = [None] * len(spanish_words)
     user_answers = [None] * len(english_words)
